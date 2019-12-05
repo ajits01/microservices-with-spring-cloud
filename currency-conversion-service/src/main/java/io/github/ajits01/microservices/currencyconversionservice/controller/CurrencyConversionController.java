@@ -17,7 +17,7 @@ public class CurrencyConversionController {
 
   @Autowired private CurrencyExchangeServiceClient currencyExchangeClient;
 
-  @GetMapping(path = "/from/{from}/to/{to}/quantity/{quantity}")
+  @GetMapping(path = "/currency-converter/from/{from}/to/{to}/quantity/{quantity}")
   public CurrencyConversionValue getConvertedCurrency(
       @PathVariable String from, @PathVariable String to, @PathVariable BigDecimal quantity) {
 
@@ -46,7 +46,7 @@ public class CurrencyConversionController {
     return currencyConversionValue;
   }
 
-  @GetMapping(path = "feign/from/{from}/to/{to}/quantity/{quantity}")
+  @GetMapping(path = "currency-converter-feign/from/{from}/to/{to}/quantity/{quantity}")
   public CurrencyConversionValue getConvertedCurrencyWithFeign(
       @PathVariable String from, @PathVariable String to, @PathVariable BigDecimal quantity) {
 
