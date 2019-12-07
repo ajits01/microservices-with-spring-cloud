@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import io.github.ajits01.microservices.currencyconversionservice.domain.CurrencyConversionValue;
 import io.github.ajits01.microservices.currencyconversionservice.restclient.CurrencyExchangeServiceClient;
 
@@ -70,6 +72,13 @@ public class CurrencyConversionController {
   }
 
   @GetMapping(path = "currency-converter-feign/from/{from}/to/{to}/quantity/{quantity}")
+  @HystrixCommand(
+      fallbackMethod = "fallbackConvertedCurrencyWithFeign",
+      commandProperties = {
+        @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "2000"),
+        @HystrixProperty(name = "circuitBreaker.requestVolumeThreshold", value = "5"),
+        @HystrixProperty(name = "circuitBreaker.errorThresholdPercentage", value = "50"),
+      })
   public CurrencyConversionValue getConvertedCurrencyWithFeign(
       @PathVariable String from, @PathVariable String to, @PathVariable BigDecimal quantity) {
 
@@ -89,5 +98,18 @@ public class CurrencyConversionController {
             responseFromExchangeService.getPort());
 
     return currencyConversionValue;
+  }
+
+  public CurrencyConversionValue fallbackConvertedCurrencyWithFeign(
+      String from, String to, BigDecimal quantity) {
+
+    return new CurrencyConversionValue(
+        0L,
+        "FALLBACK_FROM_CURRENCY",
+        "FALLBACK_TO_CURRENCY",
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        0);
   }
 }
